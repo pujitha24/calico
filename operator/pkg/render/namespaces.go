@@ -64,7 +64,7 @@ func (c *namespaceComponent) Objects() ([]client.Object, []client.Object) {
 	}
 
 	if len(c.cfg.PullSecrets) > 0 {
-		ns = append(ns, secret.ToRuntimeObjects(secret.CopyToNamespace(common.CalicoNamespace, c.cfg.PullSecrets...)...)...)
+		ns = append(ns, secret.ToRuntimeObjects(secret.CopyToNamespaceMultiOwner(common.CalicoNamespace, c.cfg.PullSecrets...)...)...)
 	}
 
 	if c.cfg.Terminating {

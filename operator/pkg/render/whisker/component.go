@@ -147,7 +147,7 @@ func (c *Component) ObjectsBeforeOverrides() ([]client.Object, []client.Object) 
 		c.networkPolicy(),
 	}
 
-	toCreate = append(toCreate, secret.ToRuntimeObjects(secret.CopyToNamespace(WhiskerNamespace, c.cfg.PullSecrets...)...)...)
+	toCreate = append(toCreate, secret.ToRuntimeObjects(secret.CopyToNamespaceMultiOwner(WhiskerNamespace, c.cfg.PullSecrets...)...)...)
 
 	toDelete := c.deprecatedObjects()
 

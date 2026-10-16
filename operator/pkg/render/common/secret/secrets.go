@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	csisecret "sigs.k8s.io/secrets-store-csi-driver/apis/v1"
 
+	"github.com/projectcalico/calico/operator/pkg/common"
 	rmeta "github.com/projectcalico/calico/operator/pkg/render/common/meta"
 	"github.com/projectcalico/calico/operator/pkg/tls"
 )
@@ -109,6 +110,17 @@ func CopyToNamespace(ns string, oSecrets ...*corev1.Secret) []*corev1.Secret {
 		x.ObjectMeta = metav1.ObjectMeta{Name: s.Name, Namespace: ns}
 
 		secrets = append(secrets, x)
+	}
+	return secrets
+}
+
+// CopyToNamespaceMultiOwner is CopyToNamespace for secrets that several controllers render into the same
+// namespace. The label makes the component handler add its owner reference alongside the others instead of
+// replacing them, so the controllers don't overwrite each other's writes on every reconcile.
+func CopyToNamespaceMultiOwner(ns string, oSecrets ...*corev1.Secret) []*corev1.Secret {
+	secrets := CopyToNamespace(ns, oSecrets...)
+	for _, s := range secrets {
+		s.Labels = map[string]string{common.MultipleOwnersLabel: "true"}
 	}
 	return secrets
 }

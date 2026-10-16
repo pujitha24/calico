@@ -123,7 +123,7 @@ func (c *Component) ObjectsBeforeOverrides() ([]client.Object, []client.Object) 
 		objs = append(objs, c.metricsService())
 	}
 
-	objs = append(objs, secret.ToRuntimeObjects(secret.CopyToNamespace(GoldmaneNamespace, c.cfg.PullSecrets...)...)...)
+	objs = append(objs, secret.ToRuntimeObjects(secret.CopyToNamespaceMultiOwner(GoldmaneNamespace, c.cfg.PullSecrets...)...)...)
 
 	var objsToDelete []client.Object
 	if c.metricsPort() == 0 {

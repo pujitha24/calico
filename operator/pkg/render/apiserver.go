@@ -225,7 +225,7 @@ func (c *apiServerComponent) ObjectsBeforeOverrides() ([]client.Object, []client
 	namespacedObjects := []client.Object{}
 
 	// Add in image pull secrets.
-	secrets := secret.CopyToNamespace(APIServerNamespace, c.cfg.PullSecrets...)
+	secrets := secret.CopyToNamespaceMultiOwner(APIServerNamespace, c.cfg.PullSecrets...)
 	namespacedObjects = append(namespacedObjects, secret.ToRuntimeObjects(secrets...)...)
 
 	// The deployment and its supporting objects are needed when running the aggregation

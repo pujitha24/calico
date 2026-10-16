@@ -26,6 +26,7 @@ import (
 	"k8s.io/utils/ptr"
 
 	operatorv1 "github.com/projectcalico/calico/operator/api/v1"
+	"github.com/projectcalico/calico/operator/pkg/common"
 	"github.com/projectcalico/calico/operator/pkg/components"
 	rmeta "github.com/projectcalico/calico/operator/pkg/render/common/meta"
 	"github.com/projectcalico/calico/operator/pkg/render/common/networkpolicy"
@@ -177,6 +178,26 @@ var _ = Describe("ComponentRendering", func() {
 			},
 		),
 	)
+
+	It("should mark the copied pull secret as shared with other controllers", func() {
+		component := whisker.Whisker(&whisker.Configuration{
+			Installation: &operatorv1.InstallationSpec{
+				KubernetesProvider: operatorv1.ProviderGKE,
+				Variant:            operatorv1.Calico,
+			},
+			PullSecrets:           []*corev1.Secret{{ObjectMeta: metav1.ObjectMeta{Name: "pull-secret", Namespace: "tigera-operator"}}},
+			TrustedCertBundle:     defaultTrustedCertBundle,
+			WhiskerKeyPair:        defaultWhiskerKeyPair,
+			WhiskerBackendKeyPair: defaultTLSKeyPair,
+			Whisker:               &operatorv1.Whisker{Spec: operatorv1.WhiskerSpec{Notifications: ptr.To(operatorv1.Enabled)}},
+		})
+		Expect(component.ResolveImages(nil)).NotTo(HaveOccurred())
+		objsToCreate, _ := component.Objects()
+
+		secret, err := rtest.GetResourceOfType[*corev1.Secret](objsToCreate, "pull-secret", whisker.WhiskerNamespace)
+		Expect(err).ShouldNot(HaveOccurred())
+		Expect(secret.Labels).To(HaveKeyWithValue(common.MultipleOwnersLabel, "true"))
+	})
 
 	It("should generate an IPv4-only NGINX configuration", func() {
 		cfg := &whisker.Configuration{
